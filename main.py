@@ -38,7 +38,8 @@ TEAL = (64, 178, 168)
 VIOLET = (168, 130, 220)
 MAGENTA = (232, 64, 160)
 LIGHT_GREY = (214, 222, 232)
-GHOST = (215, 205, 180)
+# GHOST was the faint in-box rule colour; removed with the 2nd revision
+# (25 Nov, AT: all lines behind the text in the news boxes are gone).
 KICK_GREY = (110, 105, 90)
 GRAT_LINE = (28, 62, 104)
 EQUATOR = (56, 100, 152)
@@ -673,7 +674,8 @@ def draw_hero(pg, hero):
     draw_text(pg, 80 + w + 12, 422, hero["region"], 1, MUTED, track=2)
     draw_text(pg, 48, 452, hero["headline"], 3, WHITE, bold=True, track=2)
     draw_text(pg, 48, 484, hero["fact"], 2, LIGHT_GREY, track=2)
-    pg.hline(48, 667, 506, CARD_LINE)
+    # Revision 25 Nov (AT, 2nd): no divider rule between the fact and the
+    # stat any more -- the rows are separated by the vertical gap alone.
     draw_text(pg, 48, 512, hero["stat"], 2, GOLD, bold=True, track=2)
     draw_text(pg, 684, 512, "Source: " + hero["source"], 1, MUTED, track=1)
 
@@ -691,13 +693,11 @@ def draw_card(pg, st, x, y):
     pg.hline(x, x + w - 1, y + h - 1, CARD_LINE)
     pg.vline(x, y, y + h - 1, CARD_LINE)
     pg.vline(x + w - 1, y, y + h - 1, CARD_LINE)
-    # faint ghosted newspaper background, kept to the gaps between text
-    pg.vline(x + 105, y + 58, y + h - 30, GHOST)
-    pg.vline(x + 211, y + 58, y + h - 30, GHOST)
-    pg.hline(x + 42, x + 100, y + 60, GHOST)
-    pg.hline(x + 120, x + 210, y + 60, GHOST)
-    pg.hline(x + 230, x + w - 14, y + 60, GHOST)
-    pg.hline(x + 14, x + w - 14, y + 97, GHOST)
+    # Revision 25 Nov (AT, 2nd): all the faint ghosted newspaper rules
+    # inside the card are gone -- the horizontal dividers the yellow X
+    # marks pointed at, and the two vertical ones too, since they also
+    # ran behind the text. The text rows are separated by vertical gaps
+    # alone; only the thin outer border and the illustration band stay.
     # number badge, kicker, region
     draw_marker(pg, x + 22, y + 78, st["num"], st["accent"])
     draw_text(pg, x + 42, y + 70, st["place"], 2, st["accent"], bold=True,
@@ -708,16 +708,11 @@ def draw_card(pg, st, x, y):
     for k, line in enumerate(hl):
         draw_text(pg, x + 14, y + 100 + k * 18, line, 2, PAPER, bold=True,
                   track=2)
-    if len(hl) == 1:
-        pg.hline(x + 14, x + w - 14, y + 124, GHOST)
     fl = wrap(st["fact"], 2, 2, 289)[:2]
     for k, line in enumerate(fl):
         draw_text(pg, x + 14, y + 136 + k * 16, line, 2, PAPER, track=2)
-    if len(fl) == 1:
-        pg.hline(x + 14, x + w - 14, y + 160, GHOST)
-    # separator, stat, source -- shifted 2px up so the source line clears
-    # the stat's descenders instead of touching them
-    pg.hline(x + 14, x + w - 14, y + h - 30, CARD_LINE)
+    # stat and source -- no separator rule above the stat any more
+    # (2nd revision: all in-box divider lines removed)
     draw_text(pg, x + 14, y + h - 24, st["stat"], 2, st["accent"], bold=True,
               track=2)
     draw_text(pg, x + 14, y + h - 9, "Source: " + st["source"], 1,
