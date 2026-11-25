@@ -209,23 +209,28 @@ class Page:
             self.line(cx, cy, x, y, col)
 
 # ---- bitmap font ----------------------------------------------------------
-# My own 5x7 design: 7 rows of 5 pixels per glyph. Capitals use the full
-# height; lowercase sits on the x-height (rows 2-6) with descenders
-# (g, j, p, q, y) dropping to row 6. "#" is a set pixel.
+# Second-generation 5x7 design, redrawn for this revision: 7 rows of 5
+# pixels per glyph, open counters (barred I, short mid-bars on E/F,
+# single-storey g with a tail) so letters stay distinct at small sizes.
+# Capitals use the full height; lowercase sits on the x-height (rows
+# 2-6) with descenders (g, j, p, q, y) dropping to row 6. "#" is a set
+# pixel. All text is drawn with tracking (see draw_text): 2px at scale
+# 2 and above, so no two letters ever touch -- the cramped look of the
+# first version came from zero tracking plus bold overhang.
 FONT = {
     "A": ("01110", "10001", "10001", "11111", "10001", "10001", "10001"),
     "B": ("11110", "10001", "10001", "11110", "10001", "10001", "11110"),
     "C": ("01110", "10001", "10000", "10000", "10000", "10001", "01110"),
     "D": ("11110", "10001", "10001", "10001", "10001", "10001", "11110"),
-    "E": ("11111", "10000", "10000", "11110", "10000", "10000", "11111"),
-    "F": ("11111", "10000", "10000", "11110", "10000", "10000", "10000"),
+    "E": ("11111", "10000", "10000", "11100", "10000", "10000", "11111"),
+    "F": ("11111", "10000", "10000", "11100", "10000", "10000", "10000"),
     "G": ("01110", "10001", "10000", "10111", "10001", "10001", "01111"),
     "H": ("10001", "10001", "10001", "11111", "10001", "10001", "10001"),
-    "I": ("01110", "00100", "00100", "00100", "00100", "00100", "01110"),
+    "I": ("11111", "00100", "00100", "00100", "00100", "00100", "11111"),
     "J": ("00111", "00010", "00010", "00010", "00010", "10010", "01100"),
     "K": ("10001", "10010", "10100", "11000", "10100", "10010", "10001"),
     "L": ("10000", "10000", "10000", "10000", "10000", "10000", "11111"),
-    "M": ("10001", "11011", "10101", "10101", "10001", "10001", "10001"),
+    "M": ("10001", "11011", "10101", "10001", "10001", "10001", "10001"),
     "N": ("10001", "11001", "10101", "10011", "10001", "10001", "10001"),
     "O": ("01110", "10001", "10001", "10001", "10001", "10001", "01110"),
     "P": ("11110", "10001", "10001", "11110", "10000", "10000", "10000"),
@@ -239,13 +244,13 @@ FONT = {
     "X": ("10001", "10001", "01010", "00100", "01010", "10001", "10001"),
     "Y": ("10001", "10001", "01010", "00100", "00100", "00100", "00100"),
     "Z": ("11111", "00001", "00010", "00100", "01000", "10000", "11111"),
-    "a": ("00000", "00000", "01110", "00001", "01111", "10001", "01111"),
+    "a": ("00000", "00000", "01110", "10001", "01111", "10001", "01111"),
     "b": ("10000", "10000", "11110", "10001", "10001", "10001", "11110"),
     "c": ("00000", "00000", "01110", "10000", "10000", "10001", "01110"),
     "d": ("00001", "00001", "01111", "10001", "10001", "10001", "01111"),
-    "e": ("00000", "00000", "01110", "10001", "11111", "10000", "01110"),
+    "e": ("00000", "00000", "01110", "10001", "11110", "10000", "01110"),
     "f": ("00110", "01000", "01000", "11110", "01000", "01000", "01000"),
-    "g": ("00000", "00000", "01111", "10001", "10001", "01111", "01110"),
+    "g": ("00000", "00000", "01110", "10001", "10001", "01110", "00100"),
     "h": ("10000", "10000", "11110", "10001", "10001", "10001", "10001"),
     "i": ("00100", "00000", "01100", "00100", "00100", "00100", "01110"),
     "j": ("00010", "00000", "00110", "00010", "00010", "00010", "01100"),
@@ -458,7 +463,7 @@ def draw_marker(pg, cx, cy, num, accent):
     pg.disc(cx, cy, 18, dim(accent, 0.55))
     pg.disc(cx, cy, 14, WHITE)
     pg.disc(cx, cy, 12, accent)
-    draw_centred(pg, cx, cy - 7, str(num), 2, NAVY_D, bold=True)
+    draw_centred(pg, cx, cy - 7, str(num), 2, NAVY_D, bold=True, track=1)
 
 
 def draw_map(pg, stories):
@@ -483,7 +488,7 @@ def draw_map(pg, stories):
     draw_centred(pg, 640, 300, "INDIAN OCEAN", 1, OCEAN_LABEL, track=2)
     # north arrow: white triangle with an N underneath
     pg.tri(60, 336, 54, 352, 66, 352, WHITE)
-    draw_centred(pg, 60, 356, "N", 1, WHITE, bold=True)
+    draw_centred(pg, 60, 356, "N", 1, WHITE, bold=True, track=1)
     # story markers
     for st in stories:
         x, y = proj(st["lon"], st["lat"])
@@ -664,18 +669,20 @@ def draw_hero(pg, hero):
         pg.vline(24 + t, 396, 535, GOLD)
         pg.vline(997 + t, 396, 535, GOLD)
     draw_marker(pg, 54, 428, 1, hero["accent"])
-    w = draw_text(pg, 80, 420, hero["place"], 2, GOLD, bold=True)
+    w = draw_text(pg, 80, 420, hero["place"], 2, GOLD, bold=True, track=2)
     draw_text(pg, 80 + w + 12, 422, hero["region"], 1, MUTED, track=2)
-    draw_text(pg, 48, 452, hero["headline"], 3, WHITE, bold=True)
-    draw_text(pg, 48, 484, hero["fact"], 2, LIGHT_GREY)
+    draw_text(pg, 48, 452, hero["headline"], 3, WHITE, bold=True, track=2)
+    draw_text(pg, 48, 484, hero["fact"], 2, LIGHT_GREY, track=2)
     pg.hline(48, 667, 506, CARD_LINE)
-    draw_text(pg, 48, 512, hero["stat"], 2, GOLD, bold=True)
+    draw_text(pg, 48, 512, hero["stat"], 2, GOLD, bold=True, track=2)
     draw_text(pg, 684, 512, "Source: " + hero["source"], 1, MUTED, track=1)
 
 
 def draw_card(pg, st, x, y):
     w, h = 317, 198
-    pg.rect(x, y, w, h, CARD)
+    # Revision 25 Nov (AT): no cream fill any more -- the card area stays
+    # the dark page background and the cream colour lives on as the text
+    # colour (PAPER) instead. Only the thin border outlines the card.
     pg.rect(x, y, w, 56, st["band"])
     SCENES[st["num"]](pg, x, y)
     pg.rect(x, y, w, 3, st["dark"])
@@ -693,25 +700,28 @@ def draw_card(pg, st, x, y):
     pg.hline(x + 14, x + w - 14, y + 97, GHOST)
     # number badge, kicker, region
     draw_marker(pg, x + 22, y + 78, st["num"], st["accent"])
-    draw_text(pg, x + 42, y + 70, st["place"], 2, st["dark"], bold=True)
-    draw_text(pg, x + 42, y + 88, st["region"], 1, KICK_GREY, track=2)
+    draw_text(pg, x + 42, y + 70, st["place"], 2, st["accent"], bold=True,
+              track=2)
+    draw_text(pg, x + 42, y + 88, st["region"], 1, MUTED, track=2)
     # headline and fact, wrapped to at most two lines each
-    hl = wrap(st["headline"], 2, 0, 289)[:2]
+    hl = wrap(st["headline"], 2, 2, 289)[:2]
     for k, line in enumerate(hl):
-        draw_text(pg, x + 14, y + 100 + k * 18, line, 2, INK, bold=True)
+        draw_text(pg, x + 14, y + 100 + k * 18, line, 2, PAPER, bold=True,
+                  track=2)
     if len(hl) == 1:
         pg.hline(x + 14, x + w - 14, y + 124, GHOST)
-    fl = wrap(st["fact"], 2, 0, 289)[:2]
+    fl = wrap(st["fact"], 2, 2, 289)[:2]
     for k, line in enumerate(fl):
-        draw_text(pg, x + 14, y + 136 + k * 16, line, 2, FACT_D)
+        draw_text(pg, x + 14, y + 136 + k * 16, line, 2, PAPER, track=2)
     if len(fl) == 1:
         pg.hline(x + 14, x + w - 14, y + 160, GHOST)
     # separator, stat, source -- shifted 2px up so the source line clears
     # the stat's descenders instead of touching them
     pg.hline(x + 14, x + w - 14, y + h - 30, CARD_LINE)
-    draw_text(pg, x + 14, y + h - 24, st["stat"], 2, st["dark"], bold=True)
+    draw_text(pg, x + 14, y + h - 24, st["stat"], 2, st["accent"], bold=True,
+              track=2)
     draw_text(pg, x + 14, y + h - 9, "Source: " + st["source"], 1,
-              KICK_GREY, track=1)
+              MUTED, track=1)
 
 
 def build():
@@ -720,7 +730,7 @@ def build():
     # masthead
     draw_centred(pg, 512, 26, "THE WORLD IN ONE DAY", 3, WHITE, track=3)
     draw_centred(pg, 512, 58, "WEDNESDAY 25 NOVEMBER 2026", 4, DATE_GOLD,
-                 bold=True)
+                 bold=True, track=2)
     pg.hline(24, 1000, 96, GOLD)
     pg.hline(24, 1000, 97, GOLD)
     # map with all seven markers
